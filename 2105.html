@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ten Of A Kind - Winner Takes All</title>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet"></noscript>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <style>
+    /* Base Styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: #000;
+      color: #fff;
+      overflow-x: hidden;
+      position: relative;
+    }
+    /* Header */
+    header {
+      background: #000;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header h1 {
+      background: #ff2800;
+      padding: 10px 20px;
+      border-radius: 10px;
+      transition: background 0.3s ease, color 0.3s ease;
+      cursor: pointer;
+    }
+
+    header h1:hover {
+      background: #24b6ff;
+      color: #000;
+      transform: translateY(-1px);
+      box-shadow: 0 0 5px #24b6ff;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+    }
+
+    nav a {
+      color: #ffffff;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: bold;
+      position: relative;
+      /* Ensure text links also have padding for consistent hover */
+      padding: 5px 0;
+    }
+
+    nav a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 0%;
+      height: 2px;
+      background: white;
+      transition: width 0.3s ease;
+    }
+
+    nav a:hover::after {
+      width: 100%;
+      background: #24b6ff;
+    }
+
+    /* My Profile Icon */
+    .profile-icon-link {
+      margin-left: 20px;
+      display: flex;
+      align-items: center;
+      text-decoration: none; /* Remove underline from the anchor */
+      position: relative; /* For the potential tooltip */
+    }
+
+    .profile-icon {
+      width: 30px; /* Adjust size as needed */
+      height: 30px; /* Adjust size as needed */
+      background-color: #555; /* A gray circle for the face */
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .profile-icon::before {
+      content: '';
+      position: absolute;
+      width: 60%;
+      height: 40%;
+      background-color: #777; /* Top part of the head */
+      border-radius: 50%;
+      top: 15%;
+      left: 20%;
+    }
+
+    .profile-icon::after {
+      content: '';
+      position: absolute;
+      width: 80%;
+      height: 50%;
+      background-color: #777; /* Shoulders/body */
+      border-radius: 50% 50% 0 0;
+      bottom: 0;
+      left: 10%;
+    }
+
+    .profile-icon-link:hover .profile-icon {
+      transform: scale(1.1);
+      box-shadow: 0 0 8px #24b6ff;
+      background-color: #24b6ff; /* Change color on hover */
+    }
+
+    .profile-icon-link:hover .profile-icon::before,
+    .profile-icon-link:hover .profile-icon::after {
+      background-color: #000; /* Change inner parts color on hover */
+    }
+
+    /* Hero Section */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      text-align: center;
+      background: #000;
+      padding: 5px 20px;
+      position: relative;
+    }
+
+    .falling-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 3;
+      color: #fff;
+      max-width: 800px;
+      padding: 20px;
+      animation: fadeIn 2s ease-in-out forwards;
+      margin-bottom: 20px; /* Reduced space between hero content (including quote) and features */
+    }
+
+    .hero h2, .hero h3 {
+      font-size: 3em;
+      margin-top: 25px;
+      margin-bottom: 45px;
+      transition: text-shadow 0.3s ease;
+    }
+
+    .hero h2:hover, .hero h3:hover {
+      text-shadow: 0 0 3px #24b6ff;
+    }
+
+    .hero p {
+      font-size: 1.4em;
+      margin-bottom: 10px;
+      transition: text-shadow 0.3s ease;
+    }
+
+    .hero p:hover {
+      text-shadow: 0 0 10px #24b6ff;
+    }
+
+    .hero a.modal-trigger {
+      display: inline-block;
+      margin-top: 40px;
+      padding: 15px 40px;
+      background: #ff2800;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 10px;
+      transition: background 0.3s ease, transform 0.3s ease;
+      backdrop-filter: blur(4px);
+      cursor: pointer;
+    }
+
+    .hero a.modal-trigger:hover {
+      background: #24b6ff;
+      color: #000;
+      transform: translateY(-1px);
+      box-shadow: 0 0 5px #24b6ff;
+    }
+
+    /* Quote Billboard */
+    .quote-billboard {
+      width: 100%;
+      max-width: 800px;
+      height: 100px;
+      padding: 1rem;
+      text-align: center;
+      border-radius: 10px;
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #digital-quote {
+      font-size: 1rem;
+      line-height: 1.5rem;
+      white-space: normal;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      animation: glow 1s infinite alternate ease-in-out;
+    }
+
+    /* Features Section */
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 10px 10px;
+      background: #000;
+      gap: 10px;
+      padding-bottom: 100px; /* Increased space between features and footer */
+    }
+
+    .feature {
+      background: rgba(26, 26, 26, 0.419);
+      padding: 30px;
+      border-radius: 15px;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(255,255,255,0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
+      backdrop-filter: blur(2px);
+    }
+
+    .feature:hover {
+      transform: translateY(-3px);
+      background: rgba(26, 26, 26, 0.6);
+      color: #fff;
+      box-shadow: 0 3px 15px #24b6ff;
+      text-shadow: 0 0 5px #24b6ff;
+    }
+
+    /* Footer */
+    footer {
+      background: #ff2800;
+      color: #fff;
+      padding: 20px;
+      font-size: 0.8em;
+      transition: background 0.3s ease, color 0.3s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 60px; /* Maintain height */
+    }
+
+    footer:hover {
+      background: #24b6ff;
+      color: #000;
+    }
+
+    footer .footer-left {
+      text-align: left;
+    }
+
+    footer .footer-right {
+      text-align: right;
+      display: flex;
+      gap: 20px;
+    }
+
+    footer a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: bold;
+        transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+        color: #000;
+    }
+
+    /* New container for stationary icons */
+    .static-icons-container {
+      display: flex;
+      flex-wrap: wrap; /* Allows icons to wrap to the next line */
+      justify-content: center; /* Centers icons horizontally */
+      padding: 20px 20px 0; /* Add some padding around the container */
+      gap: 10px; /* Reduced gap between icons */
+      background-color: #000; /* Match body background */
+    }
+
+    /* Icon styles for the flip effect */
+    .icon {
+      width: 120px; /* Increased width to accommodate more space */
+      height: 98px; /* Maintain aspect ratio */
+      perspective: 1000px; /* Establishes 3D space for the flip */
+      cursor: pointer;
+      position: relative; /* Needed for absolute positioning of front/back */
+      transition: transform 0.6s; /* Smooth transition for the flip */
+    }
+
+    /* Inner container for the flip effect */
+    .icon-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d; /* Key for 3D transforms */
+    }
+
+    /* Flip on hover */
+    .icon:hover .icon-inner {
+      transform: rotateY(180deg);
+    }
+
+    /* Front and back of the flip card */
+    .icon-front,
+    .icon-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden; /* Hide back of the element when facing away */
+      backface-visibility: hidden; /* Hide back of the element when facing away */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 8px; /* Consistent border radius */
+    }
+
+    .icon-front {
+      background-color: transparent; /* Image itself will be visible */
+    }
+
+    .icon-front img {
+      width: 100%; /* Make image fill the front of the card */
+      height: 100%;
+      object-fit: contain; /* Ensure flag proportions are kept */
+      border-radius: 8px; /* Match container border-radius */
+    }
+
+    .icon-back {
+      background-color: #000; /* Changed background color to black */
+      color: #fff;
+      transform: rotateY(180deg); /* Start rotated for the back */
+      font-size: 1em; /* Adjust font size for tooltip text */
+      padding: 5px; /* Padding for the text */
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.8); /* Darker glow for black background */
+      word-break: break-word; /* Allow long words to break */
+      line-height: 1.2;
+    }
+
+    /* Adjust tooltip to be the back of the card */
+    .icon::after {
+      content: none; /* Remove the old tooltip, it's now the .icon-back */
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      position: relative;
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .modal-close-button {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      color: #ff2800;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .modal-close-button:hover {
+      color: #24b6ff;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 20px;
+      text-align: center;
+      color: #ff2800;
+    }
+
+    .modal-content form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-content label {
+      margin-bottom: 8px;
+      font-size: 0.9em;
+      color: #ccc;
+    }
+
+    .modal-content input[type="text"],
+    .modal-content input[type="email"],
+    .modal-content input[type="password"] {
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #333;
+      border-radius: 5px;
+      background: #0d0d0d;
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1em;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .modal-content input[type="text"]:focus,
+    .modal-content input[type="email"]:focus,
+    .modal-content input[type="password"]:focus {
+      outline: none;
+      border-color: #24b6ff;
+      box-shadow: 0 0 5px rgba(36, 182, 255, 0.5);
+    }
+
+    .modal-content button[type="submit"] {
+      padding: 12px 20px;
+      background: #ff2800;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.1em;
+      font-weight: bold;
+      transition: background 0.3s ease, transform 0.2s ease;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .modal-content button[type="submit"]:hover {
+      background: #24b6ff;
+      color: #000;
+      transform: translateY(-2px);
+    }
+
+    .modal-switch-text {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 0.9em;
+      color: #aaa;
+    }
+
+    .modal-switch-text a {
+      color: #24b6ff;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+
+    .modal-switch-text a:hover {
+      color: #ff2800;
+    }
+
+    /* Profile Modal Specific Styles */
+    #profileModal .modal-content h2 {
+      color: #ff2800; /* A different color for profile modal title */
+    }
+
+    .profile-avatar-container {
+      width: 100px; /* Adjust size as needed */
+      height: 100px; /* Adjust size as needed */
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto 20px auto; /* Center and add space below */
+      border: 3px solid #24b6ff; /* A border around the avatar */
+      box-shadow: 0 0 10px rgba(36, 182, 255, 0.5);
+    }
+
+    .profile-avatar-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Ensures the image covers the area without distortion */
+    }
+
+    .profile-details p {
+      margin-bottom: 10px;
+      font-size: 1.1em;
+      color: #eee;
+    }
+
+    .profile-details strong {
+      color: #fff;
+    }
+
+    .profile-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .profile-actions button {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease, color 0.3s ease; /* Added color to transition */
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    #editProfileBtn {
+      background: #ff2800;
+      color: #fff;
+    }
+
+    #editProfileBtn:hover {
+      background: #24b6ff;
+      color: #000; /* Changed text color to black on hover */
+    }
+
+    #logoutBtn {
+      background: #555;
+      color: #fff;
+    }
+
+    #logoutBtn:hover {
+      background: #24b6ff;
+      color: #000; /* Changed text color to blue on hover */
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-100px) rotate(0deg) scale(0.8);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(calc(100vh + 100px)) rotate(360deg) scale(1.2);
+        opacity: 0.8;
+      }
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px #24b6ff, 0 0 20px #24b6ff;
+      }
+      to {
+        text-shadow: 0 0 20px #24b6ff, 0 0 40px #24b6ff;
+      }
+    }
+
+    .falling-suit {
+      position: absolute;
+      font-size: 5px;
+      animation: fall linear infinite;
+      color: #fff;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    /* Media Queries */
+    @media (max-width: 768px) {
+      .hero h2, .hero h3 {
+        font-size: 2em;
+      }
+
+      .hero p {
+        font-size: 1.2em;
+      }
+
+      .features {
+        flex-direction: column;
+        padding: 40px 10px;
+      }
+
+      .feature {
+        margin-bottom: 20px;
+      }
+
+      footer {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+        padding: 15px 20px; /* Adjust padding for better look on small screens */
+      }
+
+      footer .footer-right {
+        flex-direction: column;
+        gap: 5px;
+      }
+      .static-icons-container {
+        gap: 10px; /* Further reduced gap on smaller screens */
+      }
+      .icon {
+        width: 100px; /* Adjust size for smaller screens */
+        height: 70px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header role="banner">
+    <h1>Ten of a Kind</h1>
+    <nav role="navigation">
+      <a href="#">Leaderboard</a>
+      <a href="#" class="profile-icon-link">
+        <div class="profile-icon"></div>
+      </a>
+    </nav>
+  </header>
+  <main>
+    <div class="static-icons-container">
+        <div class="icon" data-tooltip="Baroda">
+          <div class="icon-inner">
+            <div class="icon-front">
+              <img src="640px/Baroda.png" alt="Flag of Baroda" loading="lazy">
+            </div>
+            <div class="icon-back">
+              Baroda
+            </div>
+          </div>
+        </div>
+        <div class="icon" data-tooltip="New Delhi">
+          <div class="icon-inner">
+            <div class="icon-front">
+              <img src="640px/Delhi.png" alt="Flag of New Delhi" loading="lazy">
+            </div>
+            <div class="icon-back">
+              New Delhi
+            </div>
+          </div>
+        </div>
+        <div class="icon" data-tooltip="Hyderabad">
+          <div class="icon-inner">
+            <div class="icon-front">
+              <img src="640px/Hyderabad.png" alt="Flag of Hyderabad" loading="lazy">
+            </div>
+            <div class="icon-back">
+              Hyderabad
+            </div>
+          </div>
+        </div>
+        <div class="icon" data-tooltip="Indore">
+          <div class="icon-inner">
+            <div class="icon-front">
+              <img src="640px/Indore.png" alt="Flag of Indore" loading="lazy">
+            </div>
+            <div class="icon-back">
+              Indore
+            </div>
+          </div>
+        </div>
+        <div class="icon" data-tooltip="Jaipur">
+          <div class="icon-inner">
+            <div class="icon-front">
+              <img src="640px/Jaipur.png" alt="Flag of Jaipur" loading="lazy">
+            </div>
+            <div class="icon-back">
+              Jaipur
+            </div>
+          </div>
+        </div>
+        <div class="icon" data-tooltip="Maratha Empire">
+          <div class="icon-inner">
+            <div class="icon-front">
+              <img src="640px/Maratha Empire.png" alt="Flag of Maratha Empire" loading="lazy">
+            </div>
+            <div class="icon-back">
+              Maratha Empire
+            </div>
+          </div>
+        </div>
+        <div class="icon" data-tooltip="Mysore">
+          <div class="icon-inner">
+            <div class="icon-front">
+              <img src="640px/Mysore.png" alt="Flag of Mysore" loading="lazy">
+            </div>
+            <div class="icon-back">
+              Mysore
+            </div>
+          </div>
+        </div>
+        <div class="icon" data-tooltip="Sikh Empire">
+          <div class="icon-inner">
+            <div class="icon-front">
+              <img src="640px/Sikh Empire.png" alt="Flag of Sikh Empire" loading="lazy">
+            </div>
+            <div class="icon-back">
+              Sikh Empire
+            </div>
+          </div>
+        </div>
+        <div class="icon" data-tooltip="Sikkim">
+          <div class="icon-inner">
+            <div class="icon-front">
+              <img src="640px/Sikkim.png" alt="Flag of Sikkim" loading="lazy">
+            </div>
+            <div class="icon-back">
+              Sikkim
+            </div>
+          </div>
+        </div>
+        <div class="icon" data-tooltip="Travancore">
+          <div class="icon-inner">
+            <div class="icon-front">
+              <img src="640px/Travancore.png" alt="Flag of Travancore" loading="lazy">
+            </div>
+            <div class="icon-back">
+              Travancore
+            </div>
+          </div>
+        </div>
+    </div>
+    <section class="hero">
+      <div class="falling-container"></div>
+      <div class="hero-content">
+        <h2>You're Welcome</h2>
+        <h3>To an Epic Game of Poker</h3>
+        <p>Much like the Historic Battle of Ten Kings</p>
+        <p>In the 'Ten of a Kind - Winner Takes All' Poker Tournament</p>
+        <p>Ten Kings will be competing against each other.</p>
+        <a href="#" class="modal-trigger" id="openLoginModal">Login/Register</a>
+
+        <div class="quote-billboard">
+          <p id="digital-quote">"Loading quote..."</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="about-content">
+      <div class="feature">
+        <h3>Real-Time</h3>
+        <p>Leaderboard</p>
+      </div>
+      <div class="feature">
+        <h3>It's Free!</h3>
+        <p>For Now</p>
+      </div>
+      <div class="feature">
+        <h3>Version</h3>
+        <p>Texas Hold'em</p>
+      </div>
+    </section>
+  </main>
+  <footer id="footer-section">
+    <div class="footer-left">
+        &copy; 2025 Ten Of A Kind. All rights reserved.
+        <br>
+        Background music: "Blue Martini" by Podington Bear
+    </div>
+    <div class="footer-right">
+        <a href="#about-content">About Us</a>
+        <a href="#">Support/Feedback</a>
+    </div>
+  </footer>
+  <div class="modal-overlay" id="loginRegisterModal">
+    <div class="modal-content">
+      <button class="modal-close-button" id="closeModal">&times;</button>
+      <h2 id="modalTitle">Login</h2>
+      <form id="loginForm">
+        <label for="loginEmail">Email:</label>
+        <input type="email" id="loginEmail" name="loginEmail" required>
+        <label for="loginPassword">Password:</label>
+        <input type="password" id="loginPassword" name="loginPassword" required>
+        <button type="submit">Login</button>
+        <p class="modal-switch-text">Don't have an account? <a href="#" id="switchToRegister">Register here</a></p>
+      </form>
+      <form id="registerForm" style="display: none;">
+        <label for="registerUsername">Username:</label>
+        <input type="text" id="registerUsername" name="registerUsername" required>
+        <label for="registerEmail">Email:</label>
+        <input type="email" id="registerEmail" name="registerEmail" required>
+        <label for="registerPassword">Password:</label>
+        <input type="password" id="registerPassword" name="registerPassword" required>
+        <label for="confirmPassword">Confirm Password:</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required>
+        <button type="submit">Register</button>
+        <p class="modal-switch-text">Already have an account? <a href="#" id="switchToLogin">Login here</a></p>
+      </form>
+    </div>
+  </div>
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-content">
+      <button class="modal-close-button" id="closeProfileModal">&times;</button>
+      <h2 id="profileModalTitle">My Profile</h2>
+      <div class="profile-details">
+        <div class="profile-avatar-container">
+            <img id="profileAvatar" src="placeholder.jpg" alt="User Avatar">
+        </div>
+        <p><strong>Username:</strong> <span id="profileUsername">JohnDoe</span></p>
+        <p><strong>Email:</strong> <span id="profileEmail">johndoe@example.com</span></p>
+        <p><strong>Chosen Kingdom:</strong> <span id="profileKingdom">Not Set</span></p>
+        <p><strong>Total Prize Money:</strong> <span id="profilePrizeMoney">$0.00</span></p>
+      </div>
+      <div class="profile-actions">
+        <button id="editProfileBtn">Edit Profile</button>
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </div>
+  <script defer>
+    // Quote Cycling
+    const quotes = [
+      "You got to know when to hold 'em, know when to fold 'em",
+      "Know when to walk away and know when to run",
+      "You never count your money when you're sittin' at the table",
+      "There'll be time enough for countin' when the dealings done",
+    ];
+
+    let currentQuote = 0;
+    const quoteEl = document.getElementById("digital-quote");
+
+    function showNextQuote() {
+      quoteEl.style.opacity = 0;
+      setTimeout(() => {
+        quoteEl.textContent = `"${quotes[currentQuote]}"`;
+        quoteEl.style.opacity = 1;
+        currentQuote = (currentQuote + 1) % quotes.length;
+      }, 1000);
+    }
+
+    showNextQuote();
+    setInterval(showNextQuote, 6000);
+
+    // Falling Suit Animation
+    const suits = ['♥️', '♦️', '♣️', '♠️'];
+    const colors = {
+      '♥️': '#ff4d4d',
+      '♦️': '#ff4d4d',
+      '♣️': '#ffffff',
+      '♠️': '#ffffff'
+    };
+
+    const container = document.querySelector('.falling-container');
+    const numberOfSuits = 60;
+    const fragment = document.createDocumentFragment();
+
+    for (let i = 0; i < numberOfSuits; i++) {
+      const suit = document.createElement('div');
+      suit.className = 'falling-suit';
+      const symbol = suits[Math.floor(Math.random() * suits.length)];
+      suit.innerText = symbol;
+      suit.style.left = Math.random() * 100 + 'vw';
+      suit.style.fontSize = Math.random() * 20 + 20 + 'px';
+      suit.style.animationDuration = (Math.random() * 5 + 5) + 's';
+      suit.style.animationDelay = Math.random() * 5 + 's';
+      suit.style.color = colors[symbol];
+      fragment.appendChild(suit);
+    }
+
+    container.appendChild(fragment);
+
+    // Login/Register Modal Functionality
+    const openModalBtn = document.getElementById('openLoginModal');
+    const modalOverlay = document.getElementById('loginRegisterModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const switchToRegisterLink = document.getElementById('switchToRegister');
+    const switchToLoginLink = document.getElementById('switchToLogin');
+
+    function openLoginRegisterModal() {
+      modalOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+    }
+
+    function closeLoginRegisterModal() {
+      modalOverlay.classList.remove('active');
+      document.body.style.overflow = ''; // Restore scrolling
+      // Reset to login form when closing
+      modalTitle.textContent = 'Login';
+      loginForm.style.display = 'flex';
+      registerForm.style.display = 'none';
+      loginForm.reset(); // Clear form fields
+      registerForm.reset(); // Clear form fields
+    }
+
+    function showLoginForm() {
+      modalTitle.textContent = 'Login';
+      loginForm.style.display = 'flex';
+      registerForm.style.display = 'none';
+      loginForm.reset();
+    }
+
+    function showRegisterForm() {
+      modalTitle.textContent = 'Register';
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'flex';
+      registerForm.reset();
+    }
+
+    openModalBtn.addEventListener('click', (e) => {
+      e.preventDefault(); // Prevent default anchor behavior
+      closeProfileModal(); // Close profile modal if open
+      openLoginRegisterModal();
+    });
+
+    closeModalBtn.addEventListener('click', closeLoginRegisterModal);
+
+    // Close login/register modal if user clicks outside the modal content
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        closeLoginRegisterModal();
+      }
+    });
+
+    switchToRegisterLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      showRegisterForm();
+    });
+
+    switchToLoginLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      showLoginForm();
+    });
+
+    // Basic form submission handling (for demonstration)
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('Login functionality not implemented yet!');
+      // In a real application, you'd send this data to a server
+      // console.log('Login data:', {
+      //   email: loginEmail.value,
+      //   password: loginPassword.value
+      // });
+      closeLoginRegisterModal();
+    });
+
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const password = document.getElementById('registerPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+      }
+      alert('Registration functionality not implemented yet!');
+      // In a real application, you'd send this data to a server
+      // console.log('Register data:', {
+      //   username: registerUsername.value,
+      //   email: registerEmail.value,
+      //   password: registerPassword.value
+      // });
+      closeLoginRegisterModal();
+    });
+
+    // Profile Modal Functionality
+    const profileModal = document.getElementById('profileModal');
+    const profileIconLink = document.querySelector('.profile-icon-link');
+    const closeProfileModalBtn = document.getElementById('closeProfileModal');
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // New DOM elements for profile details
+    const profileAvatar = document.getElementById('profileAvatar');
+    const profileUsername = document.getElementById('profileUsername');
+    const profileEmail = document.getElementById('profileEmail');
+    const profileKingdom = document.getElementById('profileKingdom');
+    const profilePrizeMoney = document.getElementById('profilePrizeMoney');
+
+
+    // Function to open the profile modal
+    function openProfileModal() {
+      profileModal.classList.add('active');
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
+      // Here you would dynamically load user data if they are logged in
+      // For demonstration, we'll use placeholder data
+      const userData = {
+        username: 'PokerKing',
+        email: 'pokerking@example.com',
+        avatar: 'https://via.placeholder.com/100/24b6ff/000000?text=PK', // Placeholder image, replace with actual user avatar URL
+        kingdom: 'Maratha Confederacy', // Example chosen kingdom
+        prizeMoney: 12500.75 // Example prize money
+      };
+
+      profileAvatar.src = userData.avatar;
+      profileUsername.textContent = userData.username;
+      profileEmail.textContent = userData.email;
+      profileKingdom.textContent = userData.kingdom;
+      profilePrizeMoney.textContent = `$${userData.prizeMoney.toFixed(2)}`; // Format as currency
+    }
+
+    // Function to close the profile modal
+    function closeProfileModal() {
+      profileModal.classList.remove('active');
+      document.body.style.overflow = ''; // Restore scrolling
+    }
+
+    // Event Listeners for Profile Modal
+    profileIconLink.addEventListener('click', (e) => {
+      e.preventDefault(); // Prevent default anchor behavior
+      closeLoginRegisterModal(); // Close login/register modal if open
+      openProfileModal();
+    });
+
+    closeProfileModalBtn.addEventListener('click', closeProfileModal);
+
+    profileModal.addEventListener('click', (e) => {
+      if (e.target === profileModal) {
+        closeProfileModal();
+      }
+    });
+
+    editProfileBtn.addEventListener('click', () => {
+      alert('Edit Profile functionality coming soon!');
+      // In a real application, this would open an edit profile form or page
+      closeProfileModal();
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      alert('Logged out!');
+      // In a real application, this would handle user logout (clear session, redirect, etc.)
+      closeProfileModal();
+    });
+
+    // Close any modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (modalOverlay.classList.contains('active')) {
+          closeLoginRegisterModal();
+        } else if (profileModal.classList.contains('active')) {
+          closeProfileModal();
+        }
+      }
+    });
+  </script>
+  <audio autoplay loop preload="auto">
+    <source src="Blue-martini.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</body>
+</html>
